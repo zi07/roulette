@@ -52,17 +52,20 @@ r_ori_number_stringBefore = r_ori_number;//중복출력방지 예전 코드와 �
 if ( (46>n1>0 && 46>n2>0 && 46>n3>0 && 46>n4>0 && 46>n5>0 && 46>n6>0)&& n1*n2*n3*n4*n5*n6!=0 ) {
 Serial.println("r start!");
 one_cycle (n1);Serial.println(n1);feedBackValue = 100 + n1;
-led_on_off(999);led_on_off(999);
+led_on_off(1111);led_on_off(1111);
 one_cycle (n2);Serial.println(n2);feedBackValue = 200 + n2;
-led_on_off(999);led_on_off(999);
+led_on_off(1111);led_on_off(1111);
 one_cycle (n3);Serial.println(n3);feedBackValue = 300 + n3;
-led_on_off(999);led_on_off(999);
+led_on_off(1111);led_on_off(1111);
 one_cycle (n4);Serial.println(n4);feedBackValue = 400 + n4;
-led_on_off(999);led_on_off(999);
+led_on_off(1111);led_on_off(1111);
 one_cycle (n5);Serial.println(n5);feedBackValue = 500 + n5;
-led_on_off(999);led_on_off(999);
+led_on_off(1111);led_on_off(1111);
 one_cycle (n6);Serial.println(n6);feedBackValue = 600 + n6;
-led_on_off(999);led_on_off(999);
+Serial.print("why? require delay!!!???? n6 -> ");Serial.println(n6);
+led_on_off(1111);led_on_off(1111);
+
+
 
 num_string_value="";
 num_string_value.toCharArray(r_ori_number, 30);
@@ -112,7 +115,7 @@ stepper.moveTo(moveValue);
 while(1){
 Serial.print(step_value);Serial.print(" ");
 //Serial.println(stepper.currentPosition());
-if (step_value <= 1){ stepper.run();}
+if (step_value <= 1){stepper.run();}
 if (step_value >= 2){stepper.run();
 //moveValue_current = stepper.currentPosition();
 moveValue = 4800 + moveValue_current + (one_cycle_num-1) * 35.5555;//45 * 35.55 = 1599.75
