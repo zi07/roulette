@@ -1,0 +1,173 @@
+//1/8resolution. 1cycle=1600step
+#include <Wire.h>
+#include <AccelStepper.h>
+
+const int step_pin = 5;//arduino D5
+const int dir_pin= 4;//D4 not used
+boolean a = 0;
+int step_value = 0;
+//int jj_int_value = 0;
+int moveValue = 0 ;
+int moveValue_current = 0;
+int feedBackValue = 0;
+//long motorPosition = 0;
+//long lastDebounceTime =0;
+//String jj_value = "";
+String num_string_value;
+String r_ori_number_stringBefore;
+String r_ori_number_string;
+
+AccelStepper stepper(AccelStepper::DRIVER, step_pin, dir_pin); 
+
+void setup() {
+Wire.begin(1);// join i2c bus with address #1
+Wire.onReceive(receiveEvent); // register event
+Wire.onRequest(sendToMaster); // request event
+Serial.begin(115200); // start serial for output
+stepper_init(24000);
+pinMode(2, 0);//HallSensorInput(InterruptPin)
+digitalWrite(2,1);//PullUp
+pinMode(13, 1);//init_LED
+digitalWrite(13, 0);
+pinMode(6, 1);//MotorDriver Enable
+digitalWrite(6, 1);//MotorDriver Disable(High)
+attachInterrupt(0, doZeroPoint, FALLING);//(pin D2)
+}
+/////////////////////////////////////////////////////////////////////////////////////
+void loop() {
+int n1=0, n2=0, n3=0, n4=0, n5=0, n6=0;
+char r_ori_number[30];
+
+num_string_value.toCharArray(r_ori_number, num_string_value.length());
+sscanf(r_ori_number,"&%d$&%d$&%d$&%d$&%d$&%d$",&n1, &n2, &n3, &n4, &n5, &n6);
+r_ori_number_string = r_ori_number;//중복출력방지 예전 코드와 같은지 체크위하여
+if (r_ori_number_string == r_ori_number_stringBefore ){Serial.print(".");}
+else {
+Serial.println("");Serial.print(r_ori_number);Serial.print(" -> ");
+Serial.print(n1);Serial.print(n2);Serial.print(n3);Serial.print(n4);
+Serial.print(n5);Serial.println(n6);
+}
+r_ori_number_stringBefore = r_ori_number;//중복출력방지 예전 코드와 같은지 체크위하여
+
+if ( (46>n1>0 && 46>n2>0 && 46>n3>0 && 46>n4>0 && 46>n5>0 && 46>n6>0)&& n1*n2*n3*n4*n5*n6!=0 ) {
+Serial.println("r start!");
+one_cycle (n1);Serial.println(n1);feedBackValue = 100 + n1;
+led_on_off(999);led_on_off(999);
+one_cycle (n2);Serial.println(n2);feedBackValue = 200 + n2;
+led_on_off(999);led_on_off(999);
+one_cycle (n3);Serial.println(n3);feedBackValue = 300 + n3;
+led_on_off(999);led_on_off(999);
+one_cycle (n4);Serial.println(n4);feedBackValue = 400 + n4;
+led_on_off(999);led_on_off(999);
+one_cycle (n5);Serial.println(n5);feedBackValue = 500 + n5;
+led_on_off(999);led_on_off(999);
+one_cycle (n6);Serial.println(n6);feedBackValue = 600 + n6;
+led_on_off(999);led_on_off(999);
+
+num_string_value="";
+num_string_value.toCharArray(r_ori_number, 30);
+
+}
+led_on_off(333);
+led_on_off(333);
+feedBackValue = 0;
+}//loop close
+////////////////////////////////////////////////////////////////
+void doZeroPoint(){
+  //lastDebounceTime = millis();
+  delayMicroseconds(100);
+  led_on_off(0);
+  moveValue_current = stepper.currentPosition();
+  if(digitalRead(2) == 0 && moveValue_current > 500 ) {step_value++;
+  
+  }
+  }
+
+void receiveEvent(int howMany) {
+char num_char_value[howMany];//배열에서 문자끝을 알리는 \0(원래는W에-붙은 원표시)가
+//포함되어야 하므로 배열을 크기를 정해서 정의할 때에는 하나더 큰 배열값을 넣어주어야 글자가 깨지지 않는다고 한다...
+for (int i=0; i < howMany; i++) {
+num_char_value[i] = Wire.read();
+}
+num_string_value = num_char_value;
+//jj_value = num_string_value.substring(1, (num_string_value.indexOf("&",1)) );
+//Serial.println(jj_value);
+}
+
+void sendToMaster(){
+  String feedBackValueString = "&";
+  feedBackValueString += feedBackValue;
+  feedBackValueString += "$";
+  Serial.println(feedBackValueString);
+  char feedBackValueChar[6];
+  feedBackValueString.toCharArray(feedBackValueChar, feedBackValueString.length()+1);
+  Wire.write(feedBackValueChar);
+}
+
+void one_cycle (int one_cycle_num){
+//stepper.runToNewPosition(0); // Cause an overshoot then back to 0
+moveValue = 32000;//기본회전값 or 원점패치에 이상이 생겼을때 회전값
+digitalWrite(6, 0);//using MotorControlEnable
+stepper.moveTo(moveValue);
+while(1){
+Serial.print(step_value);Serial.print(" ");
+//Serial.println(stepper.currentPosition());
+if (step_value <= 1){ stepper.run();}
+if (step_value >= 2){stepper.run();
+//moveValue_current = stepper.currentPosition();
+moveValue = 4800 + moveValue_current + (one_cycle_num-1) * 35.5555;//45 * 35.55 = 1599.75
+stepper.runToNewPosition(moveValue);
+stepper.run();
+}
+stepper.run();
+if (stepper.isRunning()==0) {digitalWrite(6, 1);break;}
+//stepper.runToNewPosition(0); // Cause an overshoot then back to 0
+}//while close
+step_value=0;
+stepper.setCurrentPosition(0);
+led_on_off(100);
+} //one_cycle_close
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void stepper_init(int MaxSpeedValue){ 
+stepper.setMaxSpeed(MaxSpeedValue); 
+stepper.setAcceleration(MaxSpeedValue/4); 
+}
+
+void led_on_off (int de_time){
+digitalWrite(13,a);
+delay(de_time);
+a = !a;
+}
