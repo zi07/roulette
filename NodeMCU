@@ -1,0 +1,182 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
+ESP8266WiFiMulti WiFiMulti;
+
+#include <Wire.h> //i2c (아두이노<->NocdMCU 통신)
+#include <LiquidCrystal_I2C.h> //액정 라이브러리
+LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C LCD 객체 선언
+String r_ori_number_stringBefore;
+String r_ori_number_string;
+String feedBackValue = "&111$";  
+void setup()
+{
+Serial.begin(115200);//시리얼시작.통신속도세팅
+Wire.begin();//i2d통신시작_master
+lcd.begin();//lcd시작
+lcd.home();//lcd커서위치를 홈으로
+lcd.print("Roulette Start!");//lcd글자출력
+WiFi.mode(WIFI_STA);
+WiFiMulti.addAP("pi4", "20181120");
+WiFiMulti.addAP("U+Net8B65", "1C2C017181");
+WiFiMulti.addAP("T Pocket-Fi S 0063222", "T0856132");
+WiFiMulti.addAP("\uB9E5\uC2A4PC\uBC29", "MAXMAXMAX");
+
+pinMode(16,1);digitalWrite(16,0);//GPIO16 is inint_LED(D0)
+//pinMode(2,1);digitalWrite(2,1);//GPIO2 is inint_LED(D4)
+pinMode(10,1);digitalWrite(10,1);//GPIO10 is nano_rst_ctr_pin (at local)
+}
+
+void loop(){
+// wait for WiFi connection
+if ((WiFiMulti.run() == WL_CONNECTED))
+{
+//웹상에서 가져올 데이터를 php파일로 만들어 놓으면 그 화일의 출력결과를 긁어옴.
+String read_url = "http://zi07.dothome.co.kr/roulette/number_to_node.php";
+WiFiClient client;
+HTTPClient http;
+if (http.begin(client, read_url))
+{ // HTTP
+int httpCode = http.GET();
+// httpCode will be negative on error
+if (httpCode > 0)
+{
+// file found at server
+if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY)
+{
+String payload = http.getString();
+//아래if문은 웹상의 php파일의 결과를 긁어와서 출력
+//Serial.print(payload);Serial.print(" -> ");
+static String payload_before = "";
+char char_payload[25];
+//payload.toCharArray(char_payload, payload.length());
+payload.toCharArray(char_payload, payload.length()+1);
+lcd.clear();
+lcd.print(payload_before);
+lcd.setCursor(0,1);
+lcd.print(payload.substring(1));//lcd칸이 모자라 맨 앞 글자 하나 제거
+payload_before = payload.substring(1);//lcd칸이 모자라 맨 앞 글자 하나 제거
+//&0&0&0&0&0&0 가 계속 출력되는건 의미가 없으니 마지막 데이터만 윗줄에 남기고 &0&0&0&0&0&0 데이터가 계속들어오면 대기로 수정할 것
+Serial.println(char_payload);
+
+if (char_payload[1] == '4' & char_payload[2] == '7')
+digitalWrite(10, 0);
+delayMicroseconds(10000);// = delay(10);
+digitalWrite(10, 1);
+
+//이하 무작위 인덱스 처리
+int n1=0, n2=0, n3=0, n4=0, n5=0, n6=0;
+char r_ori_number[30];
+char num_index_before[] = {0,1,28,18,23,44,12,37,4,39,24,6,31,9,41,34,27,14,19,29,42,20,38,3,45,40,36,11,21,8,5,35,25,43,13,2,7,26,16,33,30,15,22,32,10,17};
+char num_index_after[6];
+String num_index_after_string;
+//num_string_value.toCharArray(r_ori_number, num_string_value.length());
+sscanf(char_payload,"&%d$&%d$&%d$&%d$&%d$&%d$",&n1, &n2, &n3, &n4, &n5, &n6);
+
+num_index_after[0] = num_index_before[n1];
+num_index_after[1] = num_index_before[n2];
+num_index_after[2] = num_index_before[n3];
+num_index_after[3] = num_index_before[n4];
+num_index_after[4] = num_index_before[n5];
+num_index_after[5] = num_index_before[n6];
+Serial.print(n1);
+Serial.print(n2);
+Serial.print(n3);
+Serial.print(n4);
+Serial.print(n5);
+Serial.println(n6);
+Serial.print("real code->");
+for(int i=0; i<6; i++) {
+num_index_after_string += "&";
+num_index_after_string += num_index_after[i]+1-1;
+num_index_after_string += "$";
+}
+Serial.println(num_index_after_string);
+num_index_after_string.toCharArray(char_payload, num_index_after_string.length()+1);
+Serial.print("trans code->");
+Serial.println(char_payload);
+
+r_ori_number_string = num_index_after_string;//중복출력방지 예전 코드와 같은지 체크위하여
+if (r_ori_number_string == r_ori_number_stringBefore ){Serial.println("!!!.!!!");r_ori_number_string="0";}
+r_ori_number_stringBefore = r_ori_number_string;
+//이상 무작위 인덱스 처리
+
+Wire.beginTransmission(1);
+Wire.write(char_payload,num_index_after_string.length());
+//Serial.print("i2c ->");
+//Serial.write(char_payload,num_index_after_string.length());
+Wire.endTransmission(1);
+
+//receive from slave
+Wire.requestFrom(1, 6);
+while(Wire.available()){
+  char c = Wire.read();
+  feedBackValue += c;  
+}
+  Serial.print("request code -> ");
+  Serial.println(feedBackValue);
+  Serial.print("request code toInt -> ");
+  Serial.println(feedBackValue.toInt());
+
+  int valueStart = feedBackValue.indexOf("&");
+  int valueEnd =   feedBackValue.indexOf("$");
+  String feedBackValueTemp = feedBackValue.substring(valueStart+1, valueEnd);
+  char num_index_return[] = {0,1,35,23,8,30,11,36,29,13,44,27,6,34,17,41,38,45,3,18,21,28,42,4,10,32,37,16,2,19,40,12,43,39,15,31,26,7,22,9,25,14,20,33,5,24};
+  Serial.print("feedBackValueTemp -> ");
+  Serial.println(feedBackValueTemp);
+if ((100 < feedBackValueTemp.toInt()) & (feedBackValueTemp.toInt() < 646)) {
+  //read_url = "http://zi07.dothome.co.kr/roulette/insert_roulette_feedback.php?n1=7&n2=7&n3=7&n4=7&n5=7&n6=7";
+  Serial.print("if inlet!"); 
+  read_url = "http://zi07.dothome.co.kr/roulette/insert_roulette_feedback.php?n";
+  read_url += feedBackValueTemp.substring(0,1) + "=";
+  int num = (num_index_return[((feedBackValueTemp.substring(1)).toInt())]); 
+  Serial.print("*");Serial.println(num);Serial.print("*");
+  read_url += num;
+  Serial.println(read_url); 
+  }
+  else { read_url = "http://zi07.dothome.co.kr/roulette/insert_roulette_test.php?n1=0&n2=0&n3=0&n4=0&n5=0&n6=0";}
+
+  feedBackValue = "";
+
+
+//roulette_run(payload);
+
+if (http.begin(client, read_url))
+{
+int httpCode = http.GET();
+if (httpCode > 0)
+{
+if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY)
+{
+String payload = http.getString();
+}
+}
+}
+//Serial.println ("http://zi07.dothome.co.kr/roulette/insert_roulette_test.php?n1=0&n2=0&n3=0&n4=0&n5=0&n6=0");}
+}
+}
+else
+{
+Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+}
+http.end();
+}
+else
+{
+Serial.printf("[HTTP} Unable to connect\n");
+}
+led_on_off();
+delay(400);
+led_on_off();
+delay(400);
+}
+
+} //close loop
+
+void led_on_off (void){
+static boolean a = 0;
+digitalWrite(16,a);
+a = !a;
+delay(200);
+}
