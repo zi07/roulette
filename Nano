@@ -118,7 +118,7 @@ Serial.print(step_value);Serial.print(" ");
 if (step_value <= 1){stepper.run();}
 if (step_value >= 2){stepper.run();
 //moveValue_current = stepper.currentPosition();
-moveValue = 4800 + moveValue_current + (one_cycle_num-1) * 35.5555;//45 * 35.55 = 1599.75
+moveValue = 4800 + moveValue_current + (one_cycle_num-1) * 35.5555 + 18;//45 * 35.55 = 1599.75
 stepper.runToNewPosition(moveValue);
 stepper.run();
 }
