@@ -38,7 +38,9 @@ void loop() {
 int n1=0, n2=0, n3=0, n4=0, n5=0, n6=0;
 char r_ori_number[30];
 
+//num_string_value = "&1$&2$&3$&4$&5$&7$"; //수동테스트 하기 위해 값을 임의 강제로 넣어줌
 num_string_value.toCharArray(r_ori_number, num_string_value.length());
+
 sscanf(r_ori_number,"&%d$&%d$&%d$&%d$&%d$&%d$",&n1, &n2, &n3, &n4, &n5, &n6);
 r_ori_number_string = r_ori_number;//중복출력방지 예전 코드와 같은지 체크위하여
 if (r_ori_number_string == r_ori_number_stringBefore ){Serial.print(".");}
@@ -118,7 +120,58 @@ Serial.print(step_value);Serial.print(" ");
 if (step_value <= 1){stepper.run();}
 if (step_value >= 2){stepper.run();
 //moveValue_current = stepper.currentPosition();
-moveValue = 4800 + moveValue_current + (one_cycle_num-1) * 35.5555 + 18;//45 * 35.55 = 1599.75
+//moveValue = 4800 + moveValue_current + (one_cycle_num-1) * 35.555555 + 17.7777777;//45 * 35.55 = 1599.75
+
+int basecycle = 3200; // 기본 3바퀴 회전값
+int base_tol = random(5,30);
+
+if (one_cycle_num == 1)    { moveValue = basecycle + moveValue_current + base_tol + 0 ; }
+if (one_cycle_num == 2)   { moveValue = basecycle + moveValue_current + base_tol + 35 ; }
+if (one_cycle_num == 3)   { moveValue = basecycle + moveValue_current + base_tol + 71 ; }
+if (one_cycle_num == 4)   { moveValue = basecycle + moveValue_current + base_tol + 106 ; }
+if (one_cycle_num == 5)   { moveValue = basecycle + moveValue_current + base_tol + 142; }
+if (one_cycle_num == 6)   { moveValue = basecycle + moveValue_current + base_tol + 177; }
+if (one_cycle_num == 7)   { moveValue = basecycle + moveValue_current + base_tol + 213; }
+if (one_cycle_num == 8)   { moveValue = basecycle + moveValue_current + base_tol + 248; }
+if (one_cycle_num == 9)   { moveValue = basecycle + moveValue_current + base_tol + 284; }
+if (one_cycle_num == 10)  { moveValue = basecycle + moveValue_current + base_tol + 319; }
+if (one_cycle_num == 11)  { moveValue = basecycle + moveValue_current + base_tol + 355; }
+if (one_cycle_num == 12)  { moveValue = basecycle + moveValue_current + base_tol + 391; }
+if (one_cycle_num == 13)  { moveValue = basecycle + moveValue_current + base_tol + 426; }
+if (one_cycle_num == 14)  { moveValue = basecycle + moveValue_current + base_tol + 462; }
+if (one_cycle_num == 15)  { moveValue = basecycle + moveValue_current + base_tol + 497; }
+if (one_cycle_num == 16)  { moveValue = basecycle + moveValue_current + base_tol + 533; }
+if (one_cycle_num == 17)  { moveValue = basecycle + moveValue_current + base_tol + 568; }
+if (one_cycle_num == 18)  { moveValue = basecycle + moveValue_current + base_tol + 604; }
+if (one_cycle_num == 19)  { moveValue = basecycle + moveValue_current + base_tol + 639; }
+if (one_cycle_num == 20)  { moveValue = basecycle + moveValue_current + base_tol + 675; }
+if (one_cycle_num == 21)  { moveValue = basecycle + moveValue_current + base_tol + 711; }
+if (one_cycle_num == 22)  { moveValue = basecycle + moveValue_current + base_tol + 746; }
+if (one_cycle_num == 23)  { moveValue = basecycle + moveValue_current + base_tol + 782; }
+if (one_cycle_num == 24)  { moveValue = basecycle + moveValue_current + base_tol + 817; }
+if (one_cycle_num == 25)  { moveValue = basecycle + moveValue_current + base_tol + 853; }
+if (one_cycle_num == 26)  { moveValue = basecycle + moveValue_current + base_tol + 888; }
+if (one_cycle_num == 27)  { moveValue = basecycle + moveValue_current + base_tol + 924; }
+if (one_cycle_num == 28)  { moveValue = basecycle + moveValue_current + base_tol + 959; }
+if (one_cycle_num == 29)  { moveValue = basecycle + moveValue_current + base_tol + 995; }
+if (one_cycle_num == 30)  { moveValue = basecycle + moveValue_current + base_tol + 1031; }
+if (one_cycle_num == 31)  { moveValue = basecycle + moveValue_current + base_tol + 1066; }
+if (one_cycle_num == 32)  { moveValue = basecycle + moveValue_current + base_tol + 1102; }
+if (one_cycle_num == 33)  { moveValue = basecycle + moveValue_current + base_tol + 1137; }
+if (one_cycle_num == 34)  { moveValue = basecycle + moveValue_current + base_tol + 1173; }
+if (one_cycle_num == 35)  { moveValue = basecycle + moveValue_current + base_tol + 1208; }
+if (one_cycle_num == 36)  { moveValue = basecycle + moveValue_current + base_tol + 1244; }
+if (one_cycle_num == 37)  { moveValue = basecycle + moveValue_current + base_tol + 1279; }
+if (one_cycle_num == 38)  { moveValue = basecycle + moveValue_current + base_tol + 1315; }
+if (one_cycle_num == 39)  { moveValue = basecycle + moveValue_current + base_tol + 1351; }
+if (one_cycle_num == 40)  { moveValue = basecycle + moveValue_current + base_tol + 1386; }
+if (one_cycle_num == 41)  { moveValue = basecycle + moveValue_current + base_tol + 1422; }
+if (one_cycle_num == 42)  { moveValue = basecycle + moveValue_current + base_tol + 1457; }
+if (one_cycle_num == 43)  { moveValue = basecycle + moveValue_current + base_tol + 1493; }
+if (one_cycle_num == 44)  { moveValue = basecycle + moveValue_current + base_tol + 1528; }
+if (one_cycle_num == 45)  { moveValue = basecycle + moveValue_current + base_tol + 1564; }
+
+
 stepper.runToNewPosition(moveValue);
 stepper.run();
 }
@@ -166,7 +219,7 @@ led_on_off(100);
 
 void stepper_init(int MaxSpeedValue){ 
 stepper.setMaxSpeed(MaxSpeedValue); 
-stepper.setAcceleration(MaxSpeedValue/4); 
+stepper.setAcceleration(MaxSpeedValue/30); //계속 n/4로 테스트 하다 20으로 수정해봄.2020.02.18
 }
 
 void led_on_off (int de_time){
