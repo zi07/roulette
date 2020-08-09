@@ -32,13 +32,17 @@ digitalWrite(13, 0);
 pinMode(6, 1);//MotorDriver Enable
 digitalWrite(6, 1);//MotorDriver Disable(High)
 attachInterrupt(0, doZeroPoint, FALLING);//(pin D2)
+pinMode(A0, 1);
+pinMode(A1, 1);
+pinMode(A2, 1);
+
 }
 /////////////////////////////////////////////////////////////////////////////////////
 void loop() {
 int n1=0, n2=0, n3=0, n4=0, n5=0, n6=0;
 char r_ori_number[30];
 
-//num_string_value = "&1$&2$&3$&4$&5$&7$"; //수동테스트 하기 위해 값을 임의 강제로 넣어줌
+//num_string_value = "&1$&2$&3$&4$&5$&6$"; //수동테스트 하기 위해 값을 임의 강제로 넣어줌
 num_string_value.toCharArray(r_ori_number, num_string_value.length());
 
 sscanf(r_ori_number,"&%d$&%d$&%d$&%d$&%d$&%d$",&n1, &n2, &n3, &n4, &n5, &n6);
@@ -71,7 +75,7 @@ led_on_off(1111);led_on_off(1111);
 
 num_string_value="";
 num_string_value.toCharArray(r_ori_number, 30);
-
+digitalWrite(A0,1);digitalWrite(A1,0);digitalWrite(A2,0);//멈춤적색
 }
 led_on_off(333);
 led_on_off(333);
@@ -113,6 +117,7 @@ void one_cycle (int one_cycle_num){
 //stepper.runToNewPosition(0); // Cause an overshoot then back to 0
 moveValue = 32000;//기본회전값 or 원점패치에 이상이 생겼을때 회전값
 digitalWrite(6, 0);//using MotorControlEnable
+digitalWrite(A0,0);digitalWrite(A1,1);digitalWrite(A2,0);//회전시그린색
 stepper.moveTo(moveValue);
 while(1){
 Serial.print(step_value);Serial.print(" ");
@@ -122,8 +127,17 @@ if (step_value >= 2){stepper.run();
 //moveValue_current = stepper.currentPosition();
 //moveValue = 4800 + moveValue_current + (one_cycle_num-1) * 35.555555 + 17.7777777;//45 * 35.55 = 1599.75
 
-int basecycle = 3200; // 기본 3바퀴 회전값
-int base_tol = random(5,30);
+int basecycle = 4800; // 기본 3바퀴 회전값
+int base_tol_min = 7;
+int base_tol_max = 30;
+int base_tol =0;
+base_tol = random(base_tol_min,base_tol_max);
+//int base_tol =5;
+Serial.println("");
+Serial.print("base_tol=> ");
+Serial.println(base_tol);
+//if (base_tol < 17){base_tol = 32000;}
+//if (base_tol > 35){base_tol = 32000;}
 
 if (one_cycle_num == 1)    { moveValue = basecycle + moveValue_current + base_tol + 0 ; }
 if (one_cycle_num == 2)   { moveValue = basecycle + moveValue_current + base_tol + 35 ; }
@@ -176,7 +190,8 @@ stepper.runToNewPosition(moveValue);
 stepper.run();
 }
 stepper.run();
-if (stepper.isRunning()==0) {digitalWrite(6, 1);break;}
+if (stepper.isRunning()==0) {digitalWrite(6, 1);
+digitalWrite(A0,0);digitalWrite(A1,0);digitalWrite(A2,1);break;}//회전이멈추고대기블루색
 //stepper.runToNewPosition(0); // Cause an overshoot then back to 0
 }//while close
 step_value=0;
@@ -219,7 +234,7 @@ led_on_off(100);
 
 void stepper_init(int MaxSpeedValue){ 
 stepper.setMaxSpeed(MaxSpeedValue); 
-stepper.setAcceleration(MaxSpeedValue/30); //계속 n/4로 테스트 하다 20으로 수정해봄.2020.02.18
+stepper.setAcceleration(MaxSpeedValue/4); //계속 n/4로 테스트 하다 20으로 수정해봄.2020.02.18
 }
 
 void led_on_off (int de_time){
