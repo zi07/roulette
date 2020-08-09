@@ -24,6 +24,8 @@ WiFi.mode(WIFI_STA);
 WiFiMulti.addAP("pi4", "20181120");
 WiFiMulti.addAP("U+Net8B65", "1C2C017181");
 WiFiMulti.addAP("T Pocket-Fi S 0063222", "T0856132");
+WiFiMulti.addAP("SK_WiFiGIGA7367", "2003013373");
+WiFiMulti.addAP("SK_WiFiGIGA7367_5G", "2003013373");
 WiFiMulti.addAP("\uB9E5\uC2A4PC\uBC29", "MAXMAXMAX");
 
 pinMode(16,1);digitalWrite(16,0);//GPIO16 is inint_LED(D0)
@@ -36,7 +38,7 @@ void loop(){
 if ((WiFiMulti.run() == WL_CONNECTED))
 {
 //웹상에서 가져올 데이터를 php파일로 만들어 놓으면 그 화일의 출력결과를 긁어옴.
-String read_url = "http://zi07.dothome.co.kr/roulette/number_to_node.php";
+String read_url = "http://1.242.232.217/roulette/number_to_node.php";
 WiFiClient client;
 HTTPClient http;
 if (http.begin(client, read_url))
@@ -120,7 +122,8 @@ num_index_after_string_old = num_index_after_string;
 Wire.endTransmission(1);
 
 //값을 아두이노 나노에게 전달하자마자 리셋
-read_url = "http://zi07.dothome.co.kr/roulette/insert_roulette_test.php?n1=0&n2=0&n3=0&n4=0&n5=0&n6=0";
+read_url = "";
+//read_url = "http://1.242.232.217/roulette/insert_roulette_test.php?n1=0&n2=0&n3=0&n4=0&n5=0&n6=0";
 if (http.begin(client, read_url)){
 int httpCode = http.GET();
 if (httpCode > 0){
@@ -146,13 +149,14 @@ while(Wire.available()){
   Serial.println(feedBackValueTemp);
 if ((100 < feedBackValueTemp.toInt()) & (feedBackValueTemp.toInt() < 646)) {
   Serial.print("if inlet! -> "); 
-  read_url = "http://zi07.dothome.co.kr/roulette/insert_roulette_feedback.php?n";
+  read_url = "http://1.242.232.217/roulette/insert_roulette_feedback.php?n";
   read_url += feedBackValueTemp.substring(0,1) + "=";
   int num = (num_index_return[((feedBackValueTemp.substring(1)).toInt())]); 
   Serial.print("*");Serial.print(num);Serial.println("*");
   read_url += num;
   }
-  else { read_url = "http://zi07.dothome.co.kr/roulette/insert_roulette_test.php?n1=0&n2=0&n3=0&n4=0&n5=0&n6=0";}
+  else { read_url = "";}
+  //else { read_url = "http://1.242.232.217/roulette/insert_roulette_test.php?n1=0&n2=0&n3=0&n4=0&n5=0&n6=0";}
 
   feedBackValue = "";
 
